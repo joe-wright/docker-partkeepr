@@ -3,18 +3,19 @@ services:
 
   database:
     image: mariadb:10.0
-    restart: on-failure
-    environment:
-      - MYSQL_RANDOM_ROOT_PASSWORD=yes
-      - MYSQL_DATABASE=partkeepr
-      - MYSQL_USER=partkeepr
-      - MYSQL_PASSWORD=partkeepr
+    restart: always
+    env_file:
+      - .env
+      - db.env
     volumes:
       - mysql-data:/var/lib/mysql
 
   partkeepr:
     image: mhubig/partkeepr:latest
-    restart: on-failure
+    restart: always
+    env_file:
+      - .env
+      - db.env
     environment:
       - PARTKEEPR_DATABASE_HOST
       - PARTKEEPR_DATABASE_NAME
@@ -71,7 +72,7 @@ services:
 
   cronjob:
     image: mhubig/partkeepr:latest
-    restart: on-failure
+    restart: always
     entrypoint: []
     command: bash -c "crontab /etc/cron.d/partkeepr && cron -f"
     volumes:
