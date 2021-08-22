@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 services:
 
   database:
@@ -9,6 +9,8 @@ services:
       - db.env
     volumes:
       - mysql-data:/var/lib/mysql
+    networks:
+      - internal
 
   partkeepr:
     image: mhubig/partkeepr:latest
@@ -21,7 +23,6 @@ services:
       - PARTKEEPR_DATABASE_NAME
       - PARTKEEPR_DATABASE_PORT
       - PARTKEEPR_DATABASE_USER
-      - PARTKEEPR_DATABASE_PASS
       - PARTKEEPR_FR3D_LDAP_DRIVER_ACCOUNTCANONICALFORM
       - PARTKEEPR_FR3D_LDAP_DRIVER_ACCOUNTDOMAINNAME
       - PARTKEEPR_FR3D_LDAP_DRIVER_ACCOUNTDOMAINNAMESHORT
@@ -61,14 +62,21 @@ services:
       - PARTKEEPR_PARTS_LIMIT
       - PARTKEEPR_USERS_LIMIT
       - PARTKEEPR_SECRET
-    ports:
-      - "8080:80"
     volumes:
       - partkeepr-conf:/var/www/html/app/config
       - partkeepr-data:/var/www/html/data
       - partkeepr-web:/var/www/html/web
     depends_on:
       - database
+    networks:
+      - proxy_public
+      - internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy_public"
+      - "traefik.http.routers.partkeepr.rule=Host(`partkeepr.joe.xyz`)"
+      - "traefik.http.routers.partkeepr.entrypoints=https"
+      - "traefik.http.services.partkeepr.loadbalancer.server.port=80"
 
   cronjob:
     image: mhubig/partkeepr:latest
@@ -81,9 +89,19 @@ services:
       - partkeepr-web:/var/www/html/web
     depends_on:
       - partkeepr
+    networks:
+      - internal
 
 volumes:
   partkeepr-conf:
   partkeepr-data:
   partkeepr-web:
   mysql-data:
+
+networks:
+  proxy_public:
+    external: true
+  internal:
+    ipam:
+      config:
+        - subnet: 172.16.10.0/24
