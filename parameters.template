@@ -1,5 +1,5 @@
 <?php
-$container->setParameter('authentication_provider', '{{ PARTKEEPR_AUTHENTICATION_PROVIDER }}');
+$container->setParameter('authentication_provider', 'PartKeepr.Auth.HTTPBasicAuthenticationProvider');
 $container->setParameter('cache.doctrine', '{{ PARTKEEPR_CACHE_DOCTRINE }}');
 $container->setParameter('cache.dunglas', filter_var('{{ PARTKEEPR_CACHE_DUNGLAS }}', FILTER_VALIDATE_BOOLEAN));
 $container->setParameter('database_driver', '{{ PARTKEEPR_DATABASE_DRIVER }}');
